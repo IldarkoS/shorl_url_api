@@ -1,13 +1,15 @@
 import datetime
 
 from sqlalchemy import DateTime, String
-from sqlalchemy.sql import func
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.sql import func
 
+from src.config import settings
 from src.core.models.base import Base
 
+
 def default_expires():
-    return datetime.datetime.now() + datetime.timedelta(days=1)
+    return datetime.datetime.now() + datetime.timedelta(days=settings.DAYS_UNTIL_EXPIRED)
 
 class ShortURL(Base):
     __tablename__ = 'short_urls'

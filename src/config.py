@@ -13,6 +13,8 @@ class Settings(BaseSettings):
 
     DATABASE_ECHO: bool = False
 
+    DAYS_UNTIL_EXPIRED: int = 1
+
     class Config:
         env_file = os.environ.get("ENV_FILE", ".env")
 
