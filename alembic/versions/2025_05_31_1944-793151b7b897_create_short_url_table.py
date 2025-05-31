@@ -1,8 +1,8 @@
 """create short_url table
 
-Revision ID: 73135568b9cf
+Revision ID: 793151b7b897
 Revises:
-Create Date: 2025-05-31 19:18:08.615090
+Create Date: 2025-05-31 19:44:29.578546
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "73135568b9cf"
+revision: str = "793151b7b897"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
