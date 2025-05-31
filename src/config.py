@@ -11,6 +11,8 @@ class Settings(BaseSettings):
 
     DB_NAME: str = "urls"
 
+    DATABASE_ECHO: bool = False
+
     class Config:
         env_file = os.environ.get("ENV_FILE", ".env")
 
