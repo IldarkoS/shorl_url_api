@@ -29,6 +29,9 @@ class DbSettings(BaseModel):
 class Settings(BaseSettings):
 
     DAYS_UNTIL_EXPIRED: int = 1
+    SHORT_URL_LENGHT: int = 6
+    MAX_GENERATION_ATTEMPTS: int = 3
+    ALPHABET: str = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789" # Exclude O0Il1
 
     DB: DbSettings = DbSettings()
 
