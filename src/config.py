@@ -6,14 +6,11 @@ from pydantic_settings import BaseSettings
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-CERTS_DIR = BASE_DIR / "src" / "users" / "auth" / "certs"
 
 class AuthJWT(BaseModel):
-    PRIVATE_KEY_PATH: Path = CERTS_DIR / "jwt-private.pem"
-    PUBLIC_KEY_PATH: Path = CERTS_DIR / "jwt-public.pem"
-    ALGORITHM: str = "RS256"
+    SECRET_KEY: str = "SUPER_SECRET_KEY"
+    ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
-    REFRESH_TOKEN_EXPIRE_MINUTES: int = 30
 
 
 class DbSettings(BaseModel):
