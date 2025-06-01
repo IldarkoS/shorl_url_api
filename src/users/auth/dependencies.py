@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.core.db import db_helper
-from src.users.adapters.user_repo_impl import UserRepoImpl
+from src.users.adapters.user_repository import UserRepoImpl
 
 
 def get_token(request: Request):

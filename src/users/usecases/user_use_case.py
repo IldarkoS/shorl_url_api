@@ -1,6 +1,6 @@
 from typing import Protocol, Self
 
-from src.users.adapters.user_repo_impl import UserRepoProtocol
+from src.users.adapters.user_repository import UserRepoProtocol
 from src.users.auth.auth import password_hash, verify_password, create_access_token
 from src.users.domain.user import User
 

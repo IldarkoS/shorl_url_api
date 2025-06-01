@@ -4,7 +4,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import db_helper
-from src.users.adapters.user_repo_impl import UserRepoProtocol, UserRepoImpl
+from src.users.adapters.user_repository import UserRepoProtocol, UserRepoImpl
 from src.users.usecases.user_use_case import UserUseCaseProtocol, UserUseCaseImpl
 
 Session = Annotated[AsyncSession, Depends(db_helper.session_dependency)]
