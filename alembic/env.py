@@ -27,7 +27,7 @@ from src.core.models.metadata import metadata as target_metadata
 # ... etc.
 
 from src.config import settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+config.set_main_option("sqlalchemy.url", settings.DB.URL)
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
