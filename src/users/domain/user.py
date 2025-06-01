@@ -11,4 +11,4 @@ class User(Base):
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
 
-    short_url: Mapped[list["ShortURL"]] = relationship(back_populates="user")
+    short_urls: Mapped[list["ShortURL"]] = relationship(back_populates="user")
