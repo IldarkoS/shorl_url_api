@@ -12,9 +12,7 @@ from src.clicks.domain.click import Click
 class ClickRepositoryProtocol(Protocol):
     async def add_click(self: Self, url_id: int) -> Click: ...
 
-    async def get_list_click(
-        self: Self, url_id: int, since: datetime
-    ) -> int: ...
+    async def get_list_click(self: Self, url_id: int, since: datetime) -> int: ...
 
 
 class ClickRepositoryImpl(ClickRepositoryProtocol):
