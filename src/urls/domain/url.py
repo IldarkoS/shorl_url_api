@@ -10,6 +10,7 @@ from src.core.models.base import Base
 
 if TYPE_CHECKING:
     from src.users.domain.user import User
+    from src.clicks.domain.click import Click
 
 
 def default_expires():
@@ -36,3 +37,4 @@ class URL(Base):
         ForeignKey("users.id"),
     )
     user: Mapped["User"] = relationship(back_populates="urls")
+    clicks: Mapped[list["Click"]] = relationship(back_populates="url")

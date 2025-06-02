@@ -3,7 +3,7 @@ from fastapi.params import Depends
 from starlette import status
 from starlette.responses import RedirectResponse
 
-from src.dependencies import URLUseCase
+from src.dependencies import URLUseCase, ClickUseCase
 from src.urls.delivery.dto import (
     CreateShortURLRequest,
     ShortURLResponse,
@@ -90,10 +90,12 @@ async def deactivate_short_url(
 async def redirect_to_original(
     code: str,
     url_use_case: URLUseCase,
+    click_use_case: ClickUseCase,
 ):
     """Редирект на оригинальную страницу"""
-    original = await url_use_case.get_original_url(code)
-    return RedirectResponse(url=original)
+    url = await url_use_case.get_original_valid_url(code)
+    await click_use_case.log_click(url_id=url.id)
+    return RedirectResponse(url=url.original_url)
 
 
 @router.get(
@@ -106,5 +108,5 @@ async def redirect_to_original(
     url_use_case: URLUseCase,
 ):
     """Проверить правильно ли работает редирект (swagger UI не может редиректить)"""
-    original = await url_use_case.get_original_url(code)
+    original = await url_use_case.get_original_valid_url(code)
     return CreateShortURLResponse(url=original)

@@ -27,7 +27,7 @@ class URLUseCaseProtocol(Protocol):
         self: Self, user_id: int, is_active: bool, offset: int = 0, limit: int = 20
     ) -> list[URL]: ...
 
-    async def get_original_url(self: Self, short_url: str) -> str: ...
+    async def get_original_valid_url(self: Self, short_url: str) -> URL: ...
 
 
 class URLUseCaseImpl(URLUseCaseProtocol):
@@ -95,7 +95,7 @@ class URLUseCaseImpl(URLUseCaseProtocol):
         )
         return urls
 
-    async def get_original_url(self: Self, short_url: str) -> str:
+    async def get_original_valid_url(self: Self, short_url: str) -> URL:
         url = await self.repository.get_url_by_code(code=short_url)
         if not url:
             raise URLNotFound("ShortURL not found!")
@@ -104,4 +104,4 @@ class URLUseCaseImpl(URLUseCaseProtocol):
         elif url.expires_at < datetime.now(UTC):
             raise URLExpired("ShortURL expired!")
         else:
-            return url.original_url
+            return url
