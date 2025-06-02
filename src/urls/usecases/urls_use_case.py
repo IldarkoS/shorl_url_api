@@ -3,6 +3,13 @@ from datetime import datetime, UTC
 from typing import Protocol, Self
 
 from src.config import settings
+from src.core.exceptions import (
+    URLNotFound,
+    URLAccessDenied,
+    URLInactive,
+    URLExpired,
+    URLGenerationFailed,
+)
 from src.urls.adapters.url_repository import ShortUrlRepoProtocol
 from src.urls.domain.url import URL
 
@@ -50,16 +57,16 @@ class ShortURLUseCaseImpl(ShortURLUseCaseProtocol):
             if not exists:
                 return code
 
-        raise RuntimeError("Failed to generate short url, try again later!")
+        raise URLGenerationFailed("Failed to generate short url, try again later!")
 
     async def deactivate_short_url(self: Self, id: int, user_id: int) -> URL:
         url = await self.repository.get_url_by_id(id=id)
         if not url:
-            raise ValueError("Link not found!")
+            raise URLNotFound("Url not found!")
         elif user_id != url.user_id:
-            raise PermissionError("Link not yours!")
+            raise URLAccessDenied("Url not yours!")
         elif not url.is_active:
-            raise PermissionError("Link is already unactive!")
+            raise URLInactive("Url is already unactive!")
         else:
             url = await self.repository.deactivate_url(id=id)
             return url
@@ -67,9 +74,9 @@ class ShortURLUseCaseImpl(ShortURLUseCaseProtocol):
     async def get_url(self: Self, id: int, user_id: int) -> URL:
         url = await self.repository.get_url_by_id(id=id)
         if not url:
-            raise ValueError("Link not found!")
+            raise URLNotFound("Url not found!")
         elif user_id != url.user_id:
-            raise PermissionError("Link not yours!")
+            raise URLAccessDenied("Url not yours!")
         else:
             return url
 
@@ -91,10 +98,10 @@ class ShortURLUseCaseImpl(ShortURLUseCaseProtocol):
     async def get_original_url(self: Self, short_url: str) -> str:
         url = await self.repository.get_url_by_code(code=short_url)
         if not url:
-            raise ValueError("ShortURL not found!")
+            raise URLNotFound("ShortURL not found!")
         elif not url.is_active:
-            raise ValueError("ShortURL not active!")
+            raise URLInactive("ShortURL not active!")
         elif url.expires_at < datetime.now(UTC):
-            raise ValueError("ShortURL expired!")
+            raise URLExpired("ShortURL expired!")
         else:
             return url.original_url
