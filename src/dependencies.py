@@ -4,8 +4,8 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.db import db_helper
-from src.short_urls.adapters.short_url_repository import ShortUrlRepoProtocol, ShortUrlRepoImpl
-from src.short_urls.usecases.urls_use_case import (
+from src.urls.adapters.url_repository import ShortUrlRepoProtocol, ShortUrlRepoImpl
+from src.urls.usecases.urls_use_case import (
     ShortURLUseCaseProtocol,
     ShortURLUseCaseImpl,
 )

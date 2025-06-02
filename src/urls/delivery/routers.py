@@ -4,22 +4,11 @@ from starlette import status
 from starlette.responses import RedirectResponse
 
 from src.dependencies import ShortURLUseCase
-from src.short_urls.delivery.dto import CreateShortURLRequest, ShortURLResponse, FilterParamsShortURLsRequest, \
+from src.urls.delivery.dto import CreateShortURLRequest, ShortURLResponse, FilterParamsShortURLsRequest, \
     CreateShortURLResponse
 from src.users.auth.dependencies import get_current_user
 
 router = APIRouter()
-
-@router.get("/{short_code}/")
-async def redirect_to_original(
-    short_code: str,
-    short_url_use_case: ShortURLUseCase,
-):
-    try:
-        original = await short_url_use_case.get_original_url(short_code)
-        return RedirectResponse(url=original)
-    except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 @router.post("/create/", response_model=CreateShortURLResponse, status_code=status.HTTP_201_CREATED)
 async def create_short_url(
@@ -85,3 +74,14 @@ async def deactivate_short_url(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except PermissionError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+
+@router.get("/{short_code}/")
+async def redirect_to_original(
+    short_code: str,
+    short_url_use_case: ShortURLUseCase,
+):
+    try:
+        original = await short_url_use_case.get_original_url(short_code)
+        return RedirectResponse(url=original)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

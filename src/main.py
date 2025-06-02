@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from src.users.delivery.routers import router as users_router
-from src.short_urls.delivery.routers import router as short_urls_router
+from src.urls.delivery.routers import router as short_urls_router
 
 app = FastAPI()
 

@@ -5,10 +5,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.core.models.base import Base
 
 if TYPE_CHECKING:
-    from src.short_urls.domain.short_url import ShortURL
+    from src.urls.domain.url import URL
 
 class User(Base):
     username: Mapped[str] = mapped_column(unique=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(nullable=False)
 
-    short_urls: Mapped[list["ShortURL"]] = relationship(back_populates="user")
+    urls: Mapped[list["URL"]] = relationship(back_populates="user")

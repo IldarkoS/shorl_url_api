@@ -12,14 +12,11 @@ class CreateShortURLResponse(BaseModel):
 
 class ShortURLResponse(BaseModel):
     id: int
-    short_url: str
+    code: str
     original_url: HttpUrl
     is_active: bool
     created_at: datetime
     expires_at: datetime
-
-    # class Config:
-    #     from_attributes = True
 
 
 class FilterParamsShortURLsRequest(BaseModel):

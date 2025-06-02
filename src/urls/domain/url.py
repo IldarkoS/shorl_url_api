@@ -18,11 +18,11 @@ def default_expires():
     )
 
 
-class ShortURL(Base):
-    __tablename__ = "short_urls"
+class URL(Base):
+    __tablename__ = "urls"
 
     original_url: Mapped[str] = mapped_column(String())
-    short_url: Mapped[str] = mapped_column(String())
+    code: Mapped[str] = mapped_column(String())
     created_at: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -35,4 +35,4 @@ class ShortURL(Base):
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id"),
     )
-    user: Mapped["User"] = relationship(back_populates="short_urls")
+    user: Mapped["User"] = relationship(back_populates="urls")

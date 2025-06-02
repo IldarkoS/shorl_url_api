@@ -3,8 +3,8 @@ from datetime import datetime, UTC
 from typing import Protocol, Self
 
 from src.config import settings
-from src.short_urls.adapters.short_url_repository import ShortUrlRepoProtocol
-from src.short_urls.domain.short_url import ShortURL
+from src.urls.adapters.url_repository import ShortUrlRepoProtocol
+from src.urls.domain.url import URL
 
 
 class ShortURLUseCaseProtocol(Protocol):
@@ -12,13 +12,13 @@ class ShortURLUseCaseProtocol(Protocol):
         self: Self, original_url: str, user_id: int, expires_at: datetime = None
     ) -> str: ...
 
-    async def deactivate_short_url(self: Self, id: int, user_id: int) -> ShortURL: ...
+    async def deactivate_short_url(self: Self, id: int, user_id: int) -> URL: ...
 
-    async def get_url(self: Self, id: int, user_id: int) -> ShortURL: ...
+    async def get_url(self: Self, id: int, user_id: int) -> URL: ...
 
     async def get_urls_list(
         self: Self, user_id: int, is_active: bool, offset: int = 0, limit: int = 20
-    ) -> list[ShortURL]: ...
+    ) -> list[URL]: ...
 
     async def get_original_url(self: Self, short_url: str) -> str: ...
 
@@ -30,16 +30,16 @@ class ShortURLUseCaseImpl(ShortURLUseCaseProtocol):
     async def create_short_url(
         self: Self, original_url: str, user_id: int, expires_at: datetime = None
     ) -> str:
-        short_url = await self._generate_short_url()
+        code = await self._generate_code()
         result = await self.repository.create_url(
             original_url=original_url,
-            short_url=short_url,
+            code=code,
             user_id=user_id,
             expires_at=expires_at,
         )
-        return f"{settings.BASE_URL}/{result.short_url}"
+        return f"{settings.BASE_URL}/{result.code}"
 
-    async def _generate_short_url(self: Self):
+    async def _generate_code(self: Self):
         lenght = settings.SHORT_URL_LENGHT
         max_attempts = settings.MAX_GENERATION_ATTEMPTS
         alphabet = settings.ALPHABET
@@ -52,7 +52,7 @@ class ShortURLUseCaseImpl(ShortURLUseCaseProtocol):
 
         raise RuntimeError("Failed to generate short url, try again later!")
 
-    async def deactivate_short_url(self: Self, id: int, user_id: int) -> ShortURL:
+    async def deactivate_short_url(self: Self, id: int, user_id: int) -> URL:
         url = await self.repository.get_url_by_id(id=id)
         if not url:
             raise ValueError("Link not found!")
@@ -64,7 +64,7 @@ class ShortURLUseCaseImpl(ShortURLUseCaseProtocol):
             url = await self.repository.deactivate_url(id=id)
             return url
 
-    async def get_url(self: Self, id: int, user_id: int) -> ShortURL:
+    async def get_url(self: Self, id: int, user_id: int) -> URL:
         url = await self.repository.get_url_by_id(id=id)
         if not url:
             raise ValueError("Link not found!")
@@ -79,7 +79,7 @@ class ShortURLUseCaseImpl(ShortURLUseCaseProtocol):
         is_active: bool | None = None,
         offset: int = 0,
         limit: int = 20,
-    ) -> list[ShortURL]:
+    ) -> list[URL]:
         urls = await self.repository.get_urls_by_user(
             user_id=user_id,
             is_active=is_active,
