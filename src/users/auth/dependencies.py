@@ -14,9 +14,16 @@ def get_token(request: Request):
     return token
 
 
-async def get_current_user(token: str = Depends(get_token), session: AsyncSession = Depends(db_helper.scoped_session_dependency)):
+async def get_current_user(
+    token: str = Depends(get_token),
+    session: AsyncSession = Depends(db_helper.scoped_session_dependency),
+):
     try:
-        payload = jwt.decode(token, key=settings.AUTH_JWT.SECRET_KEY, algorithms=settings.AUTH_JWT.ALGORITHM)
+        payload = jwt.decode(
+            token,
+            key=settings.AUTH_JWT.SECRET_KEY,
+            algorithms=settings.AUTH_JWT.ALGORITHM,
+        )
     except JWTError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     user_id: str = payload.get("sub")

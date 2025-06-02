@@ -12,15 +12,9 @@ from src.config import settings
 
 class DatabaseHelper:
     def __init__(self, url: str, echo: bool = False):
-        self.engine = create_async_engine(
-            url=url,
-            echo=echo
-        )
+        self.engine = create_async_engine(url=url, echo=echo)
         self.session_factory = async_sessionmaker(
-            bind=self.engine,
-            autocommit=False,
-            expire_on_commit=False,
-            autoflush=False
+            bind=self.engine, autocommit=False, expire_on_commit=False, autoflush=False
         )
 
     def get_scoped_session(self):
@@ -40,7 +34,5 @@ class DatabaseHelper:
         yield session
         await session.close()
 
-db_helper = DatabaseHelper(
-    url=settings.DB.URL,
-    echo=settings.DB.ECHO
-)
+
+db_helper = DatabaseHelper(url=settings.DB.URL, echo=settings.DB.ECHO)

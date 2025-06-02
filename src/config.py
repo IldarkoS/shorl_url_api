@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 class AuthJWT(BaseModel):
     SECRET_KEY: str = "SUPER_SECRET_KEY"
     ALGORITHM: str = "HS256"
@@ -31,7 +32,9 @@ class Settings(BaseSettings):
     DAYS_UNTIL_EXPIRED: int = 1
     SHORT_URL_LENGHT: int = 6
     MAX_GENERATION_ATTEMPTS: int = 3
-    ALPHABET: str = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789" # Exclude O0Il1
+    ALPHABET: str = (
+        "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"  # Exclude O0Il1
+    )
     BASE_URL: str = "http://localhost:8000"
 
     DB: DbSettings = DbSettings()

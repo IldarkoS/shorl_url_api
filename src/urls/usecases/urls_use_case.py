@@ -10,11 +10,11 @@ from src.core.exceptions import (
     URLExpired,
     URLGenerationFailed,
 )
-from src.urls.adapters.url_repository import ShortUrlRepoProtocol
+from src.urls.adapters.url_repository import UrlRepoProtocol
 from src.urls.domain.url import URL
 
 
-class ShortURLUseCaseProtocol(Protocol):
+class URLUseCaseProtocol(Protocol):
     async def create_short_url(
         self: Self, original_url: str, user_id: int, expires_at: datetime = None
     ) -> str: ...
@@ -30,8 +30,8 @@ class ShortURLUseCaseProtocol(Protocol):
     async def get_original_url(self: Self, short_url: str) -> str: ...
 
 
-class ShortURLUseCaseImpl(ShortURLUseCaseProtocol):
-    def __init__(self: Self, repository: ShortUrlRepoProtocol):
+class URLUseCaseImpl(URLUseCaseProtocol):
+    def __init__(self: Self, repository: UrlRepoProtocol):
         self.repository = repository
 
     async def create_short_url(

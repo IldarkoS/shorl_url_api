@@ -3,7 +3,7 @@ from fastapi.params import Depends
 from starlette import status
 from starlette.responses import RedirectResponse
 
-from src.dependencies import ShortURLUseCase
+from src.dependencies import URLUseCase
 from src.urls.delivery.dto import (
     CreateShortURLRequest,
     ShortURLResponse,
@@ -22,10 +22,10 @@ router = APIRouter()
 )
 async def create_short_url(
     short_url_in: CreateShortURLRequest,
-    short_url_use_case: ShortURLUseCase,
+    url_use_case: URLUseCase,
     user=Depends(get_current_user),
 ):
-    result = await short_url_use_case.create_short_url(
+    result = await url_use_case.create_short_url(
         original_url=str(short_url_in.original_url),
         user_id=user.id,
         expires_at=short_url_in.expires_at,
@@ -37,11 +37,11 @@ async def create_short_url(
     "/list/", response_model=list[ShortURLResponse], status_code=status.HTTP_200_OK
 )
 async def user_list_short_urls(
-    short_url_use_case: ShortURLUseCase,
+    url_use_case: URLUseCase,
     user=Depends(get_current_user),
     filter_query: FilterParamsShortURLsRequest = Depends(),
 ):
-    result = await short_url_use_case.get_urls_list(
+    result = await url_use_case.get_urls_list(
         user_id=user.id,
         offset=filter_query.offset,
         limit=filter_query.limit,
@@ -55,10 +55,10 @@ async def user_list_short_urls(
 )
 async def get_url_info(
     url_id: int,
-    short_url_use_case: ShortURLUseCase,
+    url_use_case: URLUseCase,
     user=Depends(get_current_user),
 ):
-    result = await short_url_use_case.get_url(
+    result = await url_use_case.get_url(
         id=url_id,
         user_id=user.id,
     )
@@ -72,20 +72,35 @@ async def get_url_info(
 )
 async def deactivate_short_url(
     url_id: int,
-    short_url_use_case: ShortURLUseCase,
+    url_use_case: URLUseCase,
     user=Depends(get_current_user),
 ):
-    result = await short_url_use_case.deactivate_short_url(
+    result = await url_use_case.deactivate_short_url(
         id=url_id,
         user_id=user.id,
     )
     return result
 
 
-@router.get("/{short_code}/")
+@router.get("/{code}/")
 async def redirect_to_original(
-    short_code: str,
-    short_url_use_case: ShortURLUseCase,
+    code: str,
+    url_use_case: URLUseCase,
 ):
-    original = await short_url_use_case.get_original_url(short_code)
+    """Редирект на оригинальную страницу"""
+    original = await url_use_case.get_original_url(code)
     return RedirectResponse(url=original)
+
+
+@router.get(
+    "/{code}/resolve/",
+    response_model=CreateShortURLResponse,
+    status_code=status.HTTP_302_FOUND,
+)
+async def redirect_to_original(
+    code: str,
+    url_use_case: URLUseCase,
+):
+    """Проверить работает, ли правильно редирект (swagger UI не может редиректить)"""
+    original = await url_use_case.get_original_url(code)
+    return CreateShortURLResponse(url=original)

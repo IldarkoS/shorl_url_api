@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.urls.domain.url import URL
 
 
-class ShortUrlRepoProtocol(Protocol):
+class UrlRepoProtocol(Protocol):
     async def create_url(
         self: Self,
         original_url: str,
@@ -28,7 +28,7 @@ class ShortUrlRepoProtocol(Protocol):
     async def deactivate_url(self: Self, id: int) -> URL | None: ...
 
 
-class ShortUrlRepoImpl(ShortUrlRepoProtocol):
+class UrlRepoImpl(UrlRepoProtocol):
     def __init__(self, session: AsyncSession):
         self.session = session
 

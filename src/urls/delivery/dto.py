@@ -7,8 +7,10 @@ class CreateShortURLRequest(BaseModel):
     original_url: HttpUrl
     expires_at: datetime | None = None
 
+
 class CreateShortURLResponse(BaseModel):
     url: AnyHttpUrl
+
 
 class ShortURLResponse(BaseModel):
     id: int
