@@ -25,6 +25,7 @@ async def create_short_url(
     url_use_case: URLUseCase,
     user=Depends(get_current_user),
 ):
+    """Создание новой короткой ссылки"""
     result = await url_use_case.create_short_url(
         original_url=str(short_url_in.original_url),
         user_id=user.id,
@@ -41,6 +42,7 @@ async def user_list_short_urls(
     user=Depends(get_current_user),
     filter_query: FilterParamsShortURLsRequest = Depends(),
 ):
+    """Получение списка ссылок пользователя"""
     result = await url_use_case.get_urls_list(
         user_id=user.id,
         offset=filter_query.offset,
@@ -58,6 +60,7 @@ async def get_url_info(
     url_use_case: URLUseCase,
     user=Depends(get_current_user),
 ):
+    """Получение информации о конкретной ссылке"""
     result = await url_use_case.get_url(
         id=url_id,
         user_id=user.id,
@@ -75,6 +78,7 @@ async def deactivate_short_url(
     url_use_case: URLUseCase,
     user=Depends(get_current_user),
 ):
+    """Деактивировать короткую ссылку"""
     result = await url_use_case.deactivate_short_url(
         id=url_id,
         user_id=user.id,
@@ -101,6 +105,6 @@ async def redirect_to_original(
     code: str,
     url_use_case: URLUseCase,
 ):
-    """Проверить работает, ли правильно редирект (swagger UI не может редиректить)"""
+    """Проверить правильно ли работает редирект (swagger UI не может редиректить)"""
     original = await url_use_case.get_original_url(code)
     return CreateShortURLResponse(url=original)

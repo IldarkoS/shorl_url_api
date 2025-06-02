@@ -17,6 +17,7 @@ async def register_user(
     register_in: RegisterUserRequest,
     user_use_case: UserUseCase,
 ):
+    """Регистрация пользователя"""
     user = await user_use_case.register_user(register_in.username, register_in.password)
     return RegisterUserResponse.model_validate(user, from_attributes=True)
 
@@ -27,6 +28,7 @@ async def login_user(
     response: Response,
     user_use_case: UserUseCase,
 ):
+    """Аутентификация пользователя"""
     token = await user_use_case.login_user(login_in.username, login_in.password)
     response.set_cookie("access_token", token, httponly=True)
     return LoginResponse(access_token=token)
@@ -34,5 +36,6 @@ async def login_user(
 
 @router.post("/logout/", status_code=status.HTTP_200_OK)
 async def logout_user(response: Response) -> JSONResponse:
+    """Выход пользователя"""
     response.delete_cookie("access_token")
     return JSONResponse({"Success": "Logged out!"})
