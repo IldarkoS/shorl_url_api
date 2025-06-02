@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     SHORT_URL_LENGHT: int = 6
     MAX_GENERATION_ATTEMPTS: int = 3
     ALPHABET: str = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789" # Exclude O0Il1
+    BASE_URL: str = "http://localhost:8000"
 
     DB: DbSettings = DbSettings()
 
