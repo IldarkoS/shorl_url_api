@@ -14,6 +14,7 @@ async def get_url_stats(
     click_use_case: ClickUseCase,
     user=Depends(get_current_user),
 ):
+    """Просмотреть статистику переходов по ссылке"""
     url = await url_use_case.get_url(
         id=url_id,
         user_id=user.id,

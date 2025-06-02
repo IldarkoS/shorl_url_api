@@ -103,7 +103,7 @@ async def redirect_to_original(
     response_model=CreateShortURLResponse,
     status_code=status.HTTP_302_FOUND,
 )
-async def redirect_to_original(
+async def redirect_to_original_test(
     code: str,
     url_use_case: URLUseCase,
 ):
