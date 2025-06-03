@@ -7,7 +7,7 @@ from src.users.auth.dependencies import get_current_user
 router = APIRouter()
 
 
-@router.get("/list/{url_id}/stats/", response_model=ClickStatsResponse)
+@router.get("/urls/{url_id}/stats/", response_model=ClickStatsResponse)
 async def get_url_stats(
     url_id: int,
     url_use_case: URLUseCase,

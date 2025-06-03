@@ -16,7 +16,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/create/",
+    "/",
     response_model=CreateShortURLResponse,
     status_code=status.HTTP_201_CREATED,
 )
@@ -35,7 +35,7 @@ async def create_short_url(
 
 
 @router.get(
-    "/list/", response_model=list[ShortURLResponse], status_code=status.HTTP_200_OK
+    "/urls/", response_model=list[ShortURLResponse], status_code=status.HTTP_200_OK
 )
 async def user_list_short_urls(
     url_use_case: URLUseCase,
@@ -53,7 +53,7 @@ async def user_list_short_urls(
 
 
 @router.get(
-    "/list/{url_id}/", response_model=ShortURLResponse, status_code=status.HTTP_200_OK
+    "/urls/{url_id}/", response_model=ShortURLResponse, status_code=status.HTTP_200_OK
 )
 async def get_url_info(
     url_id: int,
@@ -69,7 +69,7 @@ async def get_url_info(
 
 
 @router.patch(
-    "/list/{url_id}/deactivate/",
+    "/urls/{url_id}/deactivate/",
     response_model=ShortURLResponse,
     status_code=status.HTTP_200_OK,
 )
