@@ -16,21 +16,19 @@ router = APIRouter()
 
 
 @router.post(
-    "/",
+    "/url/",
     response_model=CreateShortURLResponse,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_short_url(
-    short_url_in: CreateShortURLRequest,
+    url_in: CreateShortURLRequest,
     url_use_case: URLUseCase,
     user=Depends(get_current_user),
 ):
     """Создание новой короткой ссылки"""
-    result = await url_use_case.create_short_url(
-        original_url=str(short_url_in.original_url),
-        user_id=user.id,
-        expires_at=short_url_in.expires_at,
-    )
+    ...
+    url = url_in.to_entity(user_id=user.id)
+    result = await url_use_case.create_short_url(url=url)
     return CreateShortURLResponse(url=result)
 
 
@@ -43,17 +41,14 @@ async def user_list_short_urls(
     filter_query: FilterParamsShortURLsRequest = Depends(),
 ):
     """Получение списка ссылок пользователя"""
-    result = await url_use_case.get_urls_list(
-        user_id=user.id,
-        offset=filter_query.offset,
-        limit=filter_query.limit,
-        is_active=filter_query.is_active,
+    urls = await url_use_case.get_url_list_by_user_id(
+        user_id=user.id, params=filter_query
     )
-    return result
+    return [ShortURLResponse.from_entity(url) for url in urls]
 
 
 @router.get(
-    "/urls/{url_id}/", response_model=ShortURLResponse, status_code=status.HTTP_200_OK
+    "/url/{url_id}/", response_model=ShortURLResponse, status_code=status.HTTP_200_OK
 )
 async def get_url_info(
     url_id: int,
@@ -61,15 +56,12 @@ async def get_url_info(
     user=Depends(get_current_user),
 ):
     """Получение информации о конкретной ссылке"""
-    result = await url_use_case.get_url(
-        id=url_id,
-        user_id=user.id,
-    )
-    return result
+    url = await url_use_case.get_url_by_id(id=url_id, user_id=user.id)
+    return ShortURLResponse.from_entity(url)
 
 
 @router.patch(
-    "/urls/{url_id}/deactivate/",
+    "/url/{url_id}/deactivate/",
     response_model=ShortURLResponse,
     status_code=status.HTTP_200_OK,
 )
@@ -79,11 +71,8 @@ async def deactivate_short_url(
     user=Depends(get_current_user),
 ):
     """Деактивировать короткую ссылку"""
-    result = await url_use_case.deactivate_short_url(
-        id=url_id,
-        user_id=user.id,
-    )
-    return result
+    url = await url_use_case.deactivate_short_url_by_id(id=url_id, user_id=user.id)
+    return ShortURLResponse.from_entity(url)
 
 
 @router.get("/{code}/")
@@ -93,20 +82,20 @@ async def redirect_to_original(
     click_use_case: ClickUseCase,
 ):
     """Редирект на оригинальную страницу"""
-    url = await url_use_case.get_original_valid_url(code)
+    url = await url_use_case.get_valid_weblink_by_alias(alias=code)
     await click_use_case.log_click(url_id=url.id)
     return RedirectResponse(url=url.original_url)
 
 
-@router.get(
-    "/{code}/resolve/",
-    response_model=CreateShortURLResponse,
-    status_code=status.HTTP_302_FOUND,
-)
-async def redirect_to_original_test(
-    code: str,
-    url_use_case: URLUseCase,
-):
-    """Проверить правильно ли работает редирект (swagger UI не может редиректить)"""
-    original = await url_use_case.get_original_valid_url(code)
-    return CreateShortURLResponse(url=original)
+# @router.get(
+#     "/{code}/resolve/",
+#     response_model=CreateShortURLResponse,
+#     status_code=status.HTTP_302_FOUND,
+# )
+# async def redirect_to_original_test(
+#     code: str,
+#     url_use_case: URLUseCase,
+# ):
+#     """Проверить правильно ли работает редирект (swagger UI не может редиректить)"""
+#     original = await url_use_case.get_original_valid_url(code)
+#     return CreateShortURLResponse(url=original)

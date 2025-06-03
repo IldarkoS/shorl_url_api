@@ -1,6 +1,6 @@
 import random
 from datetime import datetime, UTC
-from typing import Protocol, Self
+from typing import Self
 
 from src.config import settings
 from src.core.exceptions import (
@@ -10,98 +10,67 @@ from src.core.exceptions import (
     URLExpired,
     URLGenerationFailed,
 )
-from src.urls.adapters.url_repository import UrlRepoProtocol
-from src.urls.domain.url import URL
-
-
-class URLUseCaseProtocol(Protocol):
-    async def create_short_url(
-        self: Self, original_url: str, user_id: int, expires_at: datetime = None
-    ) -> str: ...
-
-    async def deactivate_short_url(self: Self, id: int, user_id: int) -> URL: ...
-
-    async def get_url(self: Self, id: int, user_id: int) -> URL: ...
-
-    async def get_urls_list(
-        self: Self, user_id: int, is_active: bool, offset: int = 0, limit: int = 20
-    ) -> list[URL]: ...
-
-    async def get_original_valid_url(self: Self, short_url: str) -> URL: ...
+from src.urls.domain.entity import QueryParams, URLUseCaseProtocol, UrlRepoProtocol, URL
 
 
 class URLUseCaseImpl(URLUseCaseProtocol):
     def __init__(self: Self, repository: UrlRepoProtocol):
         self.repository = repository
 
-    async def create_short_url(
-        self: Self, original_url: str, user_id: int, expires_at: datetime = None
-    ) -> str:
-        code = await self._generate_code()
-        result = await self.repository.create_url(
-            original_url=original_url,
-            code=code,
-            user_id=user_id,
-            expires_at=expires_at,
-        )
-        return f"{settings.BASE_URL}/{result.code}"
-
-    async def _generate_code(self: Self):
-        lenght = settings.SHORT_URL_LENGHT
-        max_attempts = settings.MAX_GENERATION_ATTEMPTS
-        alphabet = settings.ALPHABET
+    async def create_short_url(self: Self, url: URL) -> str:
+        length: int = settings.SHORT_URL_LENGHT
+        max_attempts: int = settings.MAX_GENERATION_ATTEMPTS
+        alphabet: str = settings.ALPHABET
+        base_url: str = settings.BASE_URL
 
         for _ in range(max_attempts):
-            code = "".join(random.choices(population=alphabet, k=lenght))
-            exists = await self.repository.get_url_by_code(code=code)
+            alias = self._generate_code(length=length, alphabet=alphabet)
+            exists = await self.repository.get_url_by_alias(alias=alias)
             if not exists:
-                return code
+                url.code = alias
+                result = await self.repository.create_url(url=url)
+                return f"{base_url}/{result.code}/"
 
         raise URLGenerationFailed("Failed to generate short url, try again later!")
 
-    async def deactivate_short_url(self: Self, id: int, user_id: int) -> URL:
+    async def deactivate_short_url_by_id(self: Self, id: int, user_id: int) -> URL:
         url = await self.repository.get_url_by_id(id=id)
         if not url:
-            raise URLNotFound("Url not found!")
+            raise URLNotFound("URL not found")
         elif user_id != url.user_id:
-            raise URLAccessDenied("Url not yours!")
+            raise URLAccessDenied("URL not yours")
         elif not url.is_active:
-            raise URLInactive("Url is already unactive!")
+            raise URLInactive("URL is already unactive")
         else:
-            url = await self.repository.deactivate_url(id=id)
+            url = await self.repository.deactivate_url_by_id(id=id)
             return url
 
-    async def get_url(self: Self, id: int, user_id: int) -> URL:
+    async def get_url_by_id(self: Self, id: int, user_id: int) -> URL:
         url = await self.repository.get_url_by_id(id=id)
         if not url:
-            raise URLNotFound("Url not found!")
+            raise URLNotFound("URL not found")
         elif user_id != url.user_id:
-            raise URLAccessDenied("Url not yours!")
+            raise URLAccessDenied("URL not yours")
         else:
             return url
 
-    async def get_urls_list(
-        self: Self,
-        user_id: int,
-        is_active: bool | None = None,
-        offset: int = 0,
-        limit: int = 20,
+    async def get_url_list_by_user_id(
+        self: Self, user_id: int, params: QueryParams
     ) -> list[URL]:
-        urls = await self.repository.get_urls_by_user(
-            user_id=user_id,
-            is_active=is_active,
-            offset=offset,
-            limit=limit,
-        )
+        urls = await self.repository.get_urls_by_user_id(user_id=user_id, params=params)
         return urls
 
-    async def get_original_valid_url(self: Self, short_url: str) -> URL:
-        url = await self.repository.get_url_by_code(code=short_url)
+    async def get_valid_weblink_by_alias(self: Self, alias: str) -> URL:
+        url = await self.repository.get_url_by_alias(alias=alias)
         if not url:
-            raise URLNotFound("ShortURL not found!")
+            raise URLNotFound("URL not found")
         elif not url.is_active:
-            raise URLInactive("ShortURL not active!")
+            raise URLInactive("URL is already unactive")
         elif url.expires_at < datetime.now(UTC):
             raise URLExpired("ShortURL expired!")
         else:
             return url
+
+    @staticmethod
+    def _generate_code(length: int, alphabet: str) -> str:
+        return "".join(random.choices(population=alphabet, k=length))

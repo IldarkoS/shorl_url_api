@@ -1,83 +1,81 @@
-from datetime import datetime
-from typing import Protocol, Self
+from typing import Self
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.urls.domain.url import URL
-
-
-class UrlRepoProtocol(Protocol):
-    async def create_url(
-        self: Self,
-        original_url: str,
-        code: str,
-        user_id: int,
-        expires_at: datetime = None,
-    ) -> URL: ...
-
-    async def get_url_by_id(self: Self, id: int) -> URL | None: ...
-
-    async def get_url_by_code(self: Self, code: str) -> URL | None: ...
-
-    async def get_urls_by_user(
-        self: Self, user_id: int, is_active: bool | None, offset: int, limit: int
-    ) -> list[URL]: ...
-
-    async def deactivate_url(self: Self, id: int) -> URL | None: ...
+from src.urls.adapters.model import URL as URLModel
+from src.urls.domain.entity import URL as URLEntity, QueryParams
+from src.urls.domain.entity import UrlRepoProtocol
 
 
 class UrlRepoImpl(UrlRepoProtocol):
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def create_url(
-        self: Self,
-        original_url: str,
-        code: str,
-        user_id: int,
-        expires_at: datetime = None,
-    ) -> URL:
-        url = URL(
-            original_url=original_url,
-            code=code,
-            user_id=user_id,
-            expires_at=expires_at,
+    @staticmethod
+    def _orm_to_entity(orm: URLModel):
+        return URLEntity(
+            id=orm.id,
+            original_url=orm.original_url,
+            code=orm.code,
+            created_at=orm.created_at,
+            expires_at=orm.expires_at,
+            is_active=orm.is_active,
+            user_id=orm.user_id,
         )
-        self.session.add(url)
+        # return URLEntity.model_validate(orm, from_attributes=True)
+
+    @staticmethod
+    def _entity_to_orm(entity: URLEntity):
+        return URLModel(
+            original_url=entity.original_url,
+            expires_at=entity.expires_at,
+            code=entity.code,
+            is_active=entity.is_active,
+            user_id=entity.user_id,
+        )
+        # return URLModel(**entity.model_dump(exclude_none=True, exclude=("id", "created_at")))
+
+    async def create_url(self: Self, url: URLEntity) -> URLEntity:
+        orm = self._entity_to_orm(url)
+        self.session.add(orm)
         await self.session.commit()
-        return url
+        await self.session.refresh(orm)
+        return self._orm_to_entity(orm)
 
-    async def get_url_by_id(self: Self, id: int) -> URL | None:
-        stmt = select(URL).where(URL.id == id)
+    async def get_url_by_id(self: Self, id: int) -> URLEntity | None:
+        stmt = select(URLModel).where(URLModel.id == id)
         result: Result = await self.session.execute(stmt)
-        url = result.scalar_one_or_none()
-        return url
+        orm = result.scalar_one_or_none()
+        return self._orm_to_entity(orm) if orm else None
 
-    async def get_url_by_code(self: Self, code: str) -> URL | None:
-        stmt = select(URL).where(URL.code == code)
+    async def get_url_by_alias(self: Self, alias: str) -> URLEntity | None:
+        stmt = select(URLModel).where(URLModel.code == alias)
         result: Result = await self.session.execute(stmt)
-        url = result.scalar_one_or_none()
-        return url
+        orm = result.scalar_one_or_none()
+        return self._orm_to_entity(orm) if orm else None
 
-    async def get_urls_by_user(
-        self: Self, user_id: int, is_active: bool | None, offset: int, limit: int
-    ) -> list[URL]:
-        stmt = select(URL).where(URL.user_id == user_id)
-        if is_active is not None:
-            stmt = stmt.where(URL.is_active == is_active)
-        stmt = stmt.offset(offset).limit(limit)
+    async def get_urls_by_user_id(
+        self: Self, user_id: int, params: QueryParams
+    ) -> list[URLEntity]:
+        stmt = select(URLModel).where(URLModel.user_id == user_id)
+        if params.is_active is not None:
+            stmt = stmt.where(URLModel.is_active == params.is_active)
+        stmt = stmt.offset(params.offset).limit(params.limit)
 
         result: Result = await self.session.execute(stmt)
-        urls = result.scalars().all()
-        return list(urls)
+        orms = result.scalars().all()
+        return [self._orm_to_entity(orm) for orm in orms]
 
-    async def deactivate_url(self: Self, id: int) -> URL | None:
-        stmt = select(URL).where(URL.id == id)
+    async def deactivate_url_by_id(self: Self, id: int) -> URLEntity | None:
+        stmt = (
+            update(URLModel)
+            .where(URLModel.id == id)
+            .values(is_active=False)
+            .returning(URLModel)
+        )
         result: Result = await self.session.execute(stmt)
-        url = result.scalar_one_or_none()
-        if url:
-            url.is_active = False
-            await self.session.commit()
-        return url
+        await self.session.commit()
+        orm = result.scalar_one_or_none()
+        return self._orm_to_entity(orm) if orm else None

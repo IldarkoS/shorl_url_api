@@ -3,7 +3,7 @@ from typing import Protocol, Self
 
 from src.clicks.adapters.click_repository import ClickRepositoryProtocol
 from src.config import settings
-from src.urls.domain.url import URL
+from src.urls.adapters.model import URL
 
 
 class ClickUseCaseProtocol(Protocol):
