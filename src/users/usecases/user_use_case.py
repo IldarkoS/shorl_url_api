@@ -24,5 +24,4 @@ class UserUseCaseImpl(UserUseCaseProtocol):
         user = await self.repository.get_user_by_username(username=creds.username)
         if not user or not verify_password(creds.plain_password, user.hashed_password):
             raise InvalidCredentials("Invalid credentials")
-        print(user)
         return create_access_token({"sub": str(user.id)})

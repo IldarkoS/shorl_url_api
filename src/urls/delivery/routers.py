@@ -3,6 +3,7 @@ from fastapi.params import Depends
 from starlette import status
 from starlette.responses import RedirectResponse
 
+from src.clicks.domain.entity import Click
 from src.dependencies import URLUseCase, ClickUseCase
 from src.urls.delivery.dto import (
     CreateShortURLRequest,
@@ -83,7 +84,7 @@ async def redirect_to_original(
 ):
     """Редирект на оригинальную страницу"""
     url = await url_use_case.get_valid_weblink_by_alias(alias=code)
-    await click_use_case.log_click(url_id=url.id)
+    await click_use_case.log_click(Click(url_id=url.id))
     return RedirectResponse(url=url.original_url)
 
 

@@ -10,7 +10,7 @@ from src.core.models.base import Base
 
 if TYPE_CHECKING:
     from src.users.adapters.model import User
-    from src.clicks.domain.click import Click
+    from src.clicks.adapters.model import Click
 
 
 def default_expires():

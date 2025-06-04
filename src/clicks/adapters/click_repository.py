@@ -1,29 +1,44 @@
 from asyncio import Protocol
 from datetime import datetime
-from typing import Self, List
+from typing import Self
 
 from sqlalchemy import select
 from sqlalchemy.engine import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.clicks.domain.click import Click
-
-
-class ClickRepositoryProtocol(Protocol):
-    async def add_click(self: Self, url_id: int) -> Click: ...
-
-    async def get_list_click(self: Self, url_id: int, since: datetime) -> int: ...
+from src.clicks.adapters.model import Click as ClickModel
+from src.clicks.domain.entity import Click as ClickEntity
+from src.clicks.domain.entity import ClickRepositoryProtocol
 
 
 class ClickRepositoryImpl(ClickRepositoryProtocol):
     def __init__(self: Self, session: AsyncSession):
         self.session = session
 
-    async def add_click(self: Self, url_id: int) -> Click:
-        self.session.add(Click(url_id=url_id))
-        await self.session.commit()
+    @staticmethod
+    def _orm_to_entity(orm: ClickModel):
+        return ClickEntity(
+            id=orm.id,
+            timestamp=orm.timestamp,
+            url_id=orm.url_id,
+        )
 
-    async def get_list_click(self: Self, url_id: int, since: datetime) -> int:
-        stmt = select(Click).where(Click.url_id == url_id, Click.timestamp >= since)
+    @staticmethod
+    def _entity_to_orm(entity: ClickEntity):
+        return ClickModel(
+            timestamp=entity.timestamp,
+            url_id=entity.url_id,
+        )
+
+    async def add_click(self: Self, click: ClickEntity) -> ClickEntity:
+        orm = self._entity_to_orm(click)
+        self.session.add(orm)
+        await self.session.commit()
+        await self.session.refresh(orm)
+        return self._orm_to_entity(orm)
+
+    async def get_list_click_by_url_id(self: Self, url_id: int, since: datetime) -> list[ClickEntity]:
+        stmt = select(ClickModel).where(ClickModel.url_id == url_id, ClickModel.timestamp >= since)
         result: Result = await self.session.execute(stmt)
-        return len(result.scalars().all())
+        orms = result.scalars().all()
+        return [self._orm_to_entity(orm) for orm in orms]
