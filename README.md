@@ -12,7 +12,7 @@
 2. Переименовать файл `example.env` в `.env`. В корне проекта выполнить команду `docker-compose --env-file .env -f docker-compose.yml up --detach --build`, либо просто `docker compose up --build`
 3. Для остановки `docker compose stop`, для удаления `docker compose down`.
 
-Документация доступна на странице `http://localhost:8000/docs/` или `http://localhost:8000/redoc/`
+Документация доступна на странице `http://localhost:8000/docs` или `http://localhost:8000/redoc`
 
 ### Реализовано:
 1. Регистрация / аутентификация пользователей
