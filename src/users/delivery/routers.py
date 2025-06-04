@@ -18,7 +18,8 @@ async def register_user(
     user_use_case: UserUseCase,
 ):
     """Регистрация пользователя"""
-    user = await user_use_case.register_user(register_in.username, register_in.password)
+    plain_user = register_in.to_entity()
+    user = await user_use_case.register_user(plain_user)
     return RegisterUserResponse.model_validate(user, from_attributes=True)
 
 
@@ -29,7 +30,8 @@ async def login_user(
     user_use_case: UserUseCase,
 ):
     """Аутентификация пользователя"""
-    token = await user_use_case.login_user(login_in.username, login_in.password)
+    plain_user = login_in.to_entity()
+    token = await user_use_case.login_user(plain_user)
     response.set_cookie("access_token", token, httponly=True)
     return LoginResponse(access_token=token)
 

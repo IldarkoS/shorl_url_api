@@ -29,7 +29,7 @@ UserRepo = Annotated[UserRepoProtocol, Depends(get_user_repo)]
 
 
 def get_user_use_case(user_repo: UserRepo) -> UserUseCaseProtocol:
-    return UserUseCaseImpl(repo=user_repo)
+    return UserUseCaseImpl(repository=user_repo)
 
 
 UserUseCase = Annotated[UserUseCaseProtocol, Depends(get_user_use_case)]

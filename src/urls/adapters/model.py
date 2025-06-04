@@ -9,7 +9,7 @@ from src.config import settings
 from src.core.models.base import Base
 
 if TYPE_CHECKING:
-    from src.users.domain.user import User
+    from src.users.adapters.model import User
     from src.clicks.domain.click import Click
 
 
